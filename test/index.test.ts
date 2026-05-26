@@ -135,7 +135,8 @@ describe('retry()', () => {
       await Bun.sleep(100)
       return 'too late'
     }
-    const err = await retry(fn, { maxAttempts: 1, timeout: 10 }).catch(e => e)
+    let err: unknown
+    try { await retry(fn, { maxAttempts: 1, timeout: 10 }) } catch (e) { err = e }
     expect(err).toBeInstanceOf(MaxAttemptsError)
     expect((err as MaxAttemptsError).cause).toBeInstanceOf(RetryTimeoutError)
   })

@@ -1,6 +1,6 @@
-import { calculateDelay } from './strategies.ts'
-import type { RetryOptions } from './types.ts'
-import { MaxAttemptsError, RetryError, RetryTimeoutError } from './types.ts'
+import { calculateDelay } from './strategies.js'
+import type { RetryOptions } from './types.js'
+import { MaxAttemptsError, RetryError, RetryTimeoutError } from './types.js'
 
 const DEFAULTS = {
   maxAttempts: 3,
@@ -14,6 +14,10 @@ async function withTimeout<T>(
   signal?: AbortSignal,
   attemptNumber?: number,
 ): Promise<T> {
+  if (signal?.aborted) {
+    throw new RetryError('Retry cancelled', { cause: signal.reason })
+  }
+
   if (timeout <= 0 && !signal) {
     return await fn()
   }
