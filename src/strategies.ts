@@ -1,4 +1,4 @@
-import type { BackoffStrategy, CustomBackoffFn } from './types.ts'
+import type { BackoffStrategy, CustomBackoffFn } from './types.js'
 
 function fib(n: number): number {
   if (n <= 1) return 1
@@ -35,6 +35,6 @@ export function calculateDelay(
       }
       return customBackoff(attempt, error)
     default:
-      return baseDelay * Math.pow(2, attempt)
+      throw new TypeError(`Unknown strategy: ${strategy}`)
   }
 }

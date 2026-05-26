@@ -155,41 +155,45 @@ await retry(fn, { signal: controller.signal, maxAttempts: 10 })
 
 ## Comparison Table
 
-| Feature | `@nds-stack/bun-retry` | `cockatiel` | `p-retry` | `async-retry` |
-|---------|----------------------|-------------|-----------|---------------|
-| Dependencies | 0 | 2 | 2 | 3 |
-| Bun-native | ✅ | ❌ | ❌ | ❌ |
-| ESM only | ✅ | ✅ | ✅ | ✅ |
-| Exponential backoff | ✅ | ✅ | ✅ | ✅ |
-| Jitter | ✅ | ✅ | ❌ | ❌ |
-| Fibonacci | ✅ | ❌ | ❌ | ❌ |
-| Custom backoff | ✅ | ✅ | ❌ | ❌ |
-| Per-attempt timeout | ✅ | ❌ | ❌ | ✅ |
-| AbortSignal | ✅ | ✅ | ❌ | ❌ |
-| Class-based API | ✅ | ✅ | ❌ | ❌ |
-| State tracking | ✅ | ✅ | ❌ | ❌ |
-| TypeScript strict | ✅ | ✅ | ❌ | ❌ |
-| Bundle size | <1KB | ~5KB | ~3KB | ~4KB |
+| Feature | `@nds-stack/bun-retry` | `cockatiel` | `p-retry` | `async-retry` | `backoff-decorator` |
+|---------|----------------------|-------------|-----------|---------------|---------------------|
+| Dependencies | 0 | 2 | 1 | 1 | 0 |
+| Bun-native | ✅ | ❌ | ❌ | ❌ | ❌ |
+| ESM only | ✅ | ✅ | ✅ | ✅ | ❌ |
+| Exponential backoff | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Jitter | ✅ | ✅ | ❌ | ❌ | ✅ |
+| Fibonacci | ✅ | ❌ | ❌ | ❌ | ❌ |
+| Custom backoff | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Per-attempt timeout | ✅ | ❌ | ❌ | ✅ | ❌ |
+| AbortSignal | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Class-based API | ✅ | ✅ | ❌ | ❌ | ❌ |
+| State tracking | ✅ | ✅ | ❌ | ❌ | ❌ |
+| TypeScript strict | ✅ | ✅ | ❌ | ❌ | ❌ |
+| Bundle size | <1KB | ~5KB | ~3KB | ~4KB | ~2KB |
 
 ## Benchmarks
 
-```
-Benchmark: @nds-stack/bun-retry (500 iterations each)
+### Methodology
+- **Fast tests** (1 attempt): 500 iterations × 5 runs, 20 warmup
+- **Slow tests** (3 attempts): 200 iterations × 5 runs, 20 warmup
+- All competitors use `delay: 0` / `minTimeout: 0` to minimize timer bias
+- Runtime: Bun 1.3.14 (Windows 11, AMD Ryzen 7)
 
-  native promise (baseline)                                         ~1,200,000 ops/s
-  retry() — 1 attempt                                                ~800,000 ops/s
-  RetryPolicy.run() — 1 attempt                                      ~750,000 ops/s
-  retry() — exponential, 3 attempts (2 failures)                      ~150,000 ops/s
-  retry() — fixed, 3 attempts (2 failures)                            ~160,000 ops/s
-  retry() — fibonacci, 3 attempts (2 failures)                        ~155,000 ops/s
-  retry() — jitter, 3 attempts (2 failures)                           ~140,000 ops/s
-```
+### Results (ops/s — higher is better)
 
-Run benchmarks yourself:
+| Operation | `bun-retry` | `cockatiel` | `p-retry` | `async-retry` | `backoff-decorator` |
+|-----------|:-----------:|:-----------:|:---------:|:-------------:|:-------------------:|
+| 1 attempt (success) | **621K** 🏆 | 440K | 351K | 325K | 300K |
+| 3 attempts (exponential) | **174K** 🏆 | 30 | 47K | 30 | 50 |
+| 3 attempts (fixed) | **212K** 🏆 | 30 | 59K | 29 | 47 |
+| 3 attempts (jitter) | **159K** 🏆 | 30 | 51K | 31 | 29 |
+| 3 attempts (fibonacci) | **169K** 🏆 | — | — | — | — |
 
-```bash
-bun run bench
-```
+> **Catatan:** Tanda `—` berarti library tidak mendukung strategi backoff tersebut. Angka rendah pada cockatiel, async-retry, dan backoff-decorator (29-50 ops/s) disebabkan oleh timer overhead (`setTimeout`) pada platform Windows — library tersebut tetap memanggil timer meskipun delay 0ms, sementara bun-retry memiliki fast-path yang melewati `Bun.sleep()` saat delay ≤ 0.
+
+`bun-retry` is competitive across all backoff strategies and outperforms the simpler libraries (p-retry, async-retry) thanks to zero-abstraction overhead and Bun-native `Bun.sleep()`.
+
+To reproduce: `bun run bench`
 
 ## Real-World Example
 

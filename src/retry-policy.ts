@@ -1,10 +1,12 @@
-import { retry } from './retry.ts'
-import type { RetryOptions, RetryState } from './types.ts'
+import { retry } from './retry.js'
+import type { RetryOptions, RetryState } from './types.js'
+import { RetryError } from './types.js'
 
 export class RetryPolicy {
   private readonly opts: RetryOptions
   private _state: RetryState = 'idle'
   private _attempts = 0
+  private _running = false
 
   constructor(options?: RetryOptions) {
     this.opts = { ...options }
@@ -24,6 +26,11 @@ export class RetryPolicy {
   }
 
   async run<T>(fn: () => Promise<T>): Promise<T> {
+    if (this._running) {
+      throw new RetryError('RetryPolicy already running')
+    }
+
+    this._running = true
     this._state = 'running'
     this._attempts = 0
 
@@ -33,17 +40,14 @@ export class RetryPolicy {
     }
 
     try {
-      const result = await retry(wrappedFn, {
-        ...this.opts,
-        onRetry: (attempt, error, delay) => {
-          this.opts.onRetry?.(attempt, error, delay)
-        },
-      })
+      const result = await retry(wrappedFn, this.opts)
       this._state = 'succeeded'
       return result
     } catch (error) {
       this._state = 'failed'
       throw error
+    } finally {
+      this._running = false
     }
   }
 }

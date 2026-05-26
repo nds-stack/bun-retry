@@ -13,11 +13,11 @@ const data = await retry(
     strategy: 'exponential',
     timeout: 5_000,
     retryIf: (err) => {
-      const msg = (err as Error).message
+      const msg = err instanceof Error ? err.message : String(err)
       return msg.startsWith('HTTP 5') || msg.includes('fetch failed')
     },
     onRetry: (attempt, error, delay) => {
-      console.log(`Retry ${attempt} after ${delay}ms: ${(error as Error).message}`)
+      console.log(`Retry ${attempt} after ${delay}ms: ${error instanceof Error ? error.message : String(error)}`)
     },
   },
 )
