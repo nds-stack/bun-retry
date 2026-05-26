@@ -1,0 +1,22 @@
+# AI agent docs (git-ignored)
+*.md
+!README.md
+!CHANGELOG.md
+context7.json
+
+# Dependency
+node_modules/
+
+# Build output
+dist/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Bench competitors
+bench/competitors/

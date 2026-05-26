@@ -1,0 +1,10 @@
+*.md
+!README.md
+context7.json
+node_modules/
+src/
+test/
+bench/
+examples/
+tsconfig.json
+tsconfig.build.json
