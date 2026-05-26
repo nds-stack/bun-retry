@@ -1,0 +1,7 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "@nds-stack/bun-retry",
+  "description": "Zero-dependency retry/backoff utility for Bun with exponential, jitter, fibonacci, and custom strategies.",
+  "url": "https://context7.com/nds-stack/bun-retry",
+  "public_key": "pk_Zd1vpPPhPhvxg6ZjZWp5g"
+}

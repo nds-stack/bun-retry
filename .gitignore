@@ -2,8 +2,6 @@
 *.md
 !README.md
 !CHANGELOG.md
-context7.json
-
 # Dependency
 node_modules/
 
@@ -20,3 +18,5 @@ Thumbs.db
 
 # Bench competitors
 bench/competitors/
+
+# Environment.env
